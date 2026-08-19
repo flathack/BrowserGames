@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Browser-Games</title>
+<style>
+  :root{
+    --bg:#0b1220;
+    --panel:#111a2b;
+    --panel-edge:rgba(148,163,184,.16);
+    --text:#e5eef8;
+    --muted:#9fb3c8;
+  }
+  *{ box-sizing:border-box; }
+  body{
+    margin:0; min-height:100vh; padding:56px 24px 72px;
+    color:var(--text);
+    font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+    background:
+      radial-gradient(1100px 640px at 12% -8%, rgba(34,211,238,.10), transparent 45%),
+      radial-gradient(900px 560px at 92% 4%, rgba(232,53,46,.09), transparent 42%),
+      var(--bg);
+  }
+  .wrap{ width:min(1060px,100%); margin:0 auto; display:grid; gap:40px; }
+
+  header{ display:flex; align-items:flex-end; justify-content:space-between; gap:24px; flex-wrap:wrap; }
+  .kicker{
+    margin:0 0 10px; font-size:12px; font-weight:600; letter-spacing:.22em;
+    text-transform:uppercase; color:var(--muted);
+  }
+  h1{
+    margin:0; font-size:clamp(34px,5.2vw,56px); line-height:1.04; letter-spacing:.01em;
+    text-wrap:pretty;
+  }
+  h1 .dot{ color:#22d3ee; }
+  .sub{
+    margin:14px 0 0; max-width:52ch; color:var(--muted); font-size:15.5px; line-height:1.55;
+    text-wrap:pretty;
+  }
+  .count{
+    flex:none; align-self:center; display:flex; flex-direction:column; align-items:flex-end; gap:2px;
+    border:1px solid var(--panel-edge); border-radius:14px; padding:10px 16px;
+    background:rgba(17,26,43,.6);
+  }
+  .count b{ font-size:26px; font-variant-numeric:tabular-nums; letter-spacing:.02em; }
+  .count span{ font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); }
+
+  .grid{
+    display:grid; gap:18px;
+    grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
+  }
+
+  .card{
+    position:relative; overflow:hidden; display:flex; flex-direction:column;
+    background:var(--panel); border:1px solid var(--panel-edge); border-radius:18px;
+    padding:22px 22px 18px; text-decoration:none; color:inherit;
+    transition:transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+  }
+  .card::before{
+    content:""; position:absolute; inset:0 0 auto 0; height:4px;
+    background:var(--accent,#22d3ee); opacity:.85;
+  }
+  .card::after{
+    content:""; position:absolute; inset:-40% -30% auto -30%; height:70%;
+    background:radial-gradient(closest-side, var(--glow,rgba(34,211,238,.16)), transparent 70%);
+    pointer-events:none; transition:opacity .25s ease; opacity:.6;
+  }
+  .card:hover,.card:focus-visible{
+    transform:translateY(-4px);
+    border-color:var(--accent,#22d3ee);
+    box-shadow:0 18px 44px rgba(0,0,0,.35), 0 0 0 1px var(--accent,#22d3ee) inset;
+  }
+  .card:hover::after,.card:focus-visible::after{ opacity:1; }
+  .card:focus-visible{ outline:2px solid var(--accent,#22d3ee); outline-offset:3px; }
+
+  .num{
+    position:relative; z-index:1; font-size:12px; font-weight:700; letter-spacing:.2em;
+    color:var(--accent,#22d3ee); font-variant-numeric:tabular-nums;
+  }
+  .card h2{
+    position:relative; z-index:1; margin:10px 0 6px; font-size:24px; letter-spacing:.01em;
+  }
+  .card p{
+    position:relative; z-index:1; margin:0 0 18px; color:var(--muted);
+    font-size:14px; line-height:1.55; text-wrap:pretty;
+  }
+  .tags{ position:relative; z-index:1; display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; }
+  .tag{
+    font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:#b6c6da;
+    border:1px solid rgba(148,163,184,.28); border-radius:999px; padding:4px 10px;
+  }
+  .go{
+    position:relative; z-index:1; margin-top:auto; display:inline-flex; align-items:center; gap:8px;
+    font-size:14px; font-weight:600; color:var(--accent,#22d3ee);
+  }
+  .go svg{ transition:transform .18s ease; }
+  .card:hover .go svg,.card:focus-visible .go svg{ transform:translateX(4px); }
+
+  .ideas{ display:grid; gap:20px; }
+  .ideas h2{
+    margin:0; font-size:clamp(24px,3.4vw,34px); letter-spacing:.01em; text-wrap:pretty;
+  }
+  .ideas .sub{ max-width:60ch; }
+  .card.ghost{
+    background:rgba(17,26,43,.35);
+    border-style:dashed;
+  }
+  .card.ghost::before{ height:0; }
+  .card.ghost::after{ opacity:0; }
+  .card.ghost:hover{ transform:none; box-shadow:none; }
+  .badge{
+    position:absolute; top:16px; right:16px; z-index:1;
+    font-size:10px; font-weight:700; letter-spacing:.16em; text-transform:uppercase;
+    color:var(--accent); border:1px solid var(--accent); border-radius:999px; padding:3px 10px;
+    opacity:.85;
+  }
+
+  footer{
+    color:var(--muted); font-size:13px; line-height:1.6;
+    border-top:1px solid var(--panel-edge); padding-top:20px;
+  }
+  footer code{
+    font-family:ui-monospace,Consolas,monospace; font-size:12px;
+    background:rgba(148,163,184,.12); border-radius:6px; padding:2px 6px;
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    .card,.go svg{ transition:none; }
+    .card:hover,.card:focus-visible{ transform:none; }
+  }
+  @media (max-width:520px){
+    body{ padding:40px 16px 56px; }
+    .count{ align-self:flex-start; }
+    .ideas .grid{ grid-template-columns:1fr !important; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <p class="kicker">Privat &middot; HTML5</p>
+      <h1>Browser-Games<span class="dot">.</span></h1>
+      <p class="sub">Kleine Spiele, die direkt im Browser laufen — keine Installation, keine Anmeldung. Ein Klick, und es geht los.</p>
+    </div>
+    <div class="count" id="count" aria-label="Anzahl Spiele"><b>–</b><span>Spiele</span></div>
+  </header>
+
+  <main class="grid" id="games">
+
+    <a class="card" href="snake.html"
+       style="--accent:#22d3ee; --glow:rgba(34,211,238,.18);">
+      <span class="num">01</span>
+      <h2>Snake</h2>
+      <p>Der Klassiker: Steuere die Schlange, sammle Punkte und wächst — ohne in dich selbst oder die Wand zu krachen.</p>
+      <div class="tags"><span class="tag">Arcade</span><span class="tag">1&nbsp;Player</span></div>
+      <span class="go">Spielen
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </span>
+    </a>
+
+    <a class="card" href="feuer.html"
+       style="--accent:#e8352e; --glow:rgba(255,139,61,.18);">
+      <span class="num">02</span>
+      <h2>Brandquadrat</h2>
+      <p>Feuerwehraufgabe: Löschfahrzeuge einsetzen, Wasser clever dosieren und die Brände im Quadrat löschen, bevor es brenzlig wird.</p>
+      <div class="tags"><span class="tag">Simulation</span><span class="tag">Rätsel</span></div>
+      <span class="go">Spielen
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </span>
+    </a>
+
+  </main>
+
+  <section class="ideas" aria-labelledby="ideas-title">
+    <div>
+      <p class="kicker">Kleinkind-Kiste &middot; 4–6 Jahre</p>
+      <h2 id="ideas-title">Ideen &amp; Baustellen<span class="dot" style="color:#f472b6">.</span></h2>
+      <p class="sub">Spiele für die ganz Kleinen — groß, langsam, ohne Zeitdruck und mit viel Lob. Noch Platzhalter: erst wird gespielt, dann gebastelt.</p>
+    </div>
+
+    <div class="grid" style="grid-template-columns:repeat(2,1fr);">
+
+      <div class="card ghost" style="--accent:#f472b6;" aria-label="Spielidee, noch nicht gebaut">
+        <span class="badge">Idee</span>
+        <span class="num" style="color:var(--accent)">K1</span>
+        <h2>Blubber-See</h2>
+        <p>Fische mit dem Finger oder der Maus nach oben schwimmen lassen, damit sie an der Wasseroberfläche platschen. Ruhige Farben, keine Verlierer.</p>
+        <div class="tags"><span class="tag">Finger</span><span class="tag">Entdecken</span><span class="tag">Kein Zeitlimit</span></div>
+        <span class="go" style="color:var(--muted)">Noch im Bau</span>
+      </div>
+
+      <div class="card ghost" style="--accent:#34d399;" aria-label="Spielidee, noch nicht gebaut">
+        <span class="badge">Idee</span>
+        <span class="num" style="color:var(--accent)">K2</span>
+        <h2>Frucht-Fang</h2>
+        <p>Früchte fallen sanft vom Baum, Korb links/rechts schieben und auffangen. Große Trefferflächen, fröhliche Klänge, jede Frucht zählt.</p>
+        <div class="tags"><span class="tag">Zielen</span><span class="tag">Zählen</span><span class="tag">Klang</span></div>
+        <span class="go" style="color:var(--muted)">Noch im Bau</span>
+      </div>
+
+      <div class="card ghost" style="--accent:#fbbf24;" aria-label="Spielidee, noch nicht gebaut">
+        <span class="badge">Idee</span>
+        <span class="num" style="color:var(--accent)">K3</span>
+        <h2>Wegweiser</h2>
+        <p>Einen Hasen durch eine weiche Landschaft steuern und zu seiner Karotte begleiten. Einfache Links/Rechts-Schritte, viel Licht und keine Fallen.</p>
+        <div class="tags"><span class="tag">Geschicklichkeit</span><span class="tag">Geschichte</span></div>
+        <span class="go" style="color:var(--muted)">Noch im Bau</span>
+      </div>
+
+      <div class="card ghost" style="--accent:#818cf8;" aria-label="Spielidee, noch nicht gebaut">
+        <span class="badge">Idee</span>
+        <span class="num" style="color:var(--accent)">K4</span>
+        <h2>Farb-Blitz</h2>
+        <p>„Zeig mir Rot!" — die passende große Kachel antippen. Farben lernen durch Spiel, Tempo wird mit der Zeit schneller, nie bestraft.</p>
+        <div class="tags"><span class="tag">Farben</span><span class="tag">Reaktion</span></div>
+        <span class="go" style="color:var(--muted)">Noch im Bau</span>
+      </div>
+
+    </div>
+  </section>
+
+  <footer>
+    Neue Spiele einfach als <code>name.html</code> in diesen Ordner legen und eine <code>&lt;a class="card"&gt;</code> in <code>index.html</code> ergänzen — die Zählung oben passt sich automatisch an.
+  </footer>
+</div>
+
+<script>
+  // Zählt die Karten automatisch, damit die Zahl oben nie veraltet.
+  const cards = document.querySelectorAll('#games .card');
+  document.querySelector('#count b').textContent = String(cards.length).padStart(2,'0');
+</script>
+</body>
+</html>
