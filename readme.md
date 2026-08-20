@@ -11,14 +11,14 @@ Jedes Spiel ist eine einzelne, eigenständige HTML-Datei (HTML + CSS + JS inline
 |-------|-------|--------------|
 | 🐍 Snake | [`snake.html`](snake.html) | Der Klassiker — mit Maus, Tastatur und Touch steuerbar. |
 | 🚒 Brandquadrat | [`feuer.html`](feuer.html) | Feuerwehraufgabe — Brände löschen, Zeit im Blick behalten. |
+| 🧺 Frucht-Fang | [`frucht.html`](frucht.html) | Für die ganz Kleinen (4–6 J.) — Korb schieben, Früchte auffangen. Groß, langsam, ohne Zeitdruck, mit viel Lob. |
 
 ### 🧸 Kleinkind-Kiste (4–6 Jahre) — Ideen & Baustellen
 
 Spiele für die ganz Kleinen: groß, langsam, ohne Zeitdruck und mit viel Lob.
-Noch als Platzhalter in [`index.html`](index.html) hinterlegt:
+**Frucht-Fang ist fertig und spielbar** 🎉 (siehe Tabelle oben). Noch als Platzhalter in [`index.html`](index.html) hinterlegt:
 
 - 💦 **Blubber-See** — Fische nach oben schwimmen lassen
-- 🍎 **Frucht-Fang** — Korb schieben, fallende Früchte auffangen
 - 🐰 **Wegweiser** — Hase zur Karotte begleiten
 - 🎨 **Farb-Blitz** — „Zeig mir Rot!" — passende Kachel antippen
 
