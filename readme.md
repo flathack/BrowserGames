@@ -13,13 +13,13 @@ Jedes Spiel ist eine einzelne, eigenständige HTML-Datei (HTML + CSS + JS inline
 | 🚒 Brandquadrat | [`feuer.html`](feuer.html) | Feuerwehraufgabe — Brände löschen, Zeit im Blick behalten. |
 | 🧺 Frucht-Fang | [`frucht.html`](frucht.html) | Für die ganz Kleinen (4–6 J.) — Korb schieben, Früchte auffangen. Groß, langsam, ohne Zeitdruck, mit viel Lob. |
 | 🎨 Farben-Blitz | [`farben-blitz.html`](farben-blitz.html) | Für die ganz Kleinen (4–6 J.) — „Zeig mir Rot!" — passende große Farb-Kachel antippen. Farben lernen, ohne Zeitdruck, nie bestraft, nur viel Lob. |
+| 💦 Blubber-See | [`blubber.html`](blubber.html) | Für die ganz Kleinen (4–6 J.) — Fische mit Finger oder Maus nach oben schwimmen lassen, bis sie platschen. Ruhig, ohne Zeitlimit, keine Verlierer. |
 
 ### 🧸 Kleinkind-Kiste (4–6 Jahre) — Ideen & Baustellen
 
 Spiele für die ganz Kleinen: groß, langsam, ohne Zeitdruck und mit viel Lob.
-**Frucht-Fang und Farben-Blitz sind fertig und spielbar** 🎉 (siehe Tabelle oben). Noch als Platzhalter in [`index.html`](index.html) hinterlegt:
+**Frucht-Fang, Farben-Blitz und Blubber-See sind fertig und spielbar** 🎉 (siehe Tabelle oben). Noch als Platzhalter in [`index.html`](index.html) hinterlegt:
 
-- 💦 **Blubber-See** — Fische nach oben schwimmen lassen
 - 🐰 **Wegweiser** — Hase zur Karotte begleiten
 
 ## 📦 Weitere Spiel-Ideen (Backlog)
@@ -60,6 +60,9 @@ BrowserGames/
 ├── index.html      # Hauptseite — verlinkt auf alle Spiele + Ideen
 ├── snake.html      # 🐍 Snake
 ├── feuer.html      # 🚒 Brandquadrat
+├── frucht.html     # 🧺 Frucht-Fang
+├── farben-blitz.html # 🎨 Farben-Blitz
+├── blubber.html    # 💦 Blubber-See
 ├── agents.md       # Regeln & Definition-of-Done für alle Spiele
 └── readme.md       # Diese Datei
 ```

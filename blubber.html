@@ -1,0 +1,610 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>Blubber-See 🐟</title>
+  <meta name="description" content="Blubber-See: Hilf dem Fischen, an die Oberfläche zu kommen! Finger oder Maus nach oben führen — ruhig, ohne Zeitdruck und mit viel Lob. Für die ganz Kleinen (4–6 J.)." />
+  <style>
+    :root{
+      --bg:#07131f;
+      --bg2:#0a1c2e;
+      --panel:#0f2334;
+      --edge:rgba(148,197,224,.16);
+      --text:#eaf6ff;
+      --muted:#9fc0d6;
+      --aqua:#38bdf8;
+      --aqua2:#22d3ee;
+      --coral:#fb7185;
+      --sand:#fcd34d;
+    }
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0; color:var(--text);
+      font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+      background:
+        radial-gradient(1200px 700px at 20% -10%, rgba(56,189,248,.14), transparent 46%),
+        radial-gradient(1000px 600px at 90% 0%, rgba(34,211,238,.10), transparent 44%),
+        linear-gradient(180deg, var(--bg2), var(--bg));
+      overflow:hidden;
+      -webkit-tap-highlight-color:transparent;
+      -webkit-user-select:none; user-select:none;
+    }
+
+    .stage{
+      position:fixed; inset:0; display:flex; flex-direction:column;
+      padding:14px clamp(12px,3vw,26px); gap:12px;
+      touch-action:none;
+    }
+
+    /* Kopfzeile */
+    .head{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+    .brand{ display:flex; align-items:center; gap:12px; min-width:0; }
+    .logo{
+      width:46px; height:46px; flex:none; display:grid; place-items:center;
+      font-size:24px; border-radius:14px;
+      background:linear-gradient(160deg,#123349,#0e2740);
+      border:1px solid var(--edge);
+      box-shadow:0 10px 24px rgba(0,0,0,.4), inset 0 2px 0 rgba(255,255,255,.08);
+    }
+    .title{ display:flex; flex-direction:column; min-width:0; }
+    .title b{ font-size:clamp(17px,3.6vw,22px); letter-spacing:.01em; }
+    .title span{ font-size:12.5px; color:var(--muted); }
+    .hud{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+    .pill{
+      display:flex; align-items:center; gap:8px; min-width:84px;
+      padding:8px 14px; border-radius:999px;
+      background:rgba(15,35,52,.7); border:1px solid var(--edge);
+      font-size:14px; font-weight:600;
+    }
+    .pill .ic{ font-size:17px; }
+    .pill .v{ font-variant-numeric:tabular-nums; }
+    .btn{
+      appearance:none; border:1px solid var(--edge); cursor:pointer;
+      padding:9px 15px; border-radius:12px; font-size:14px; font-weight:600; color:var(--text);
+      background:rgba(15,35,52,.7); touch-action:none;
+      transition:transform .08s ease, background .15s ease, border-color .15s ease;
+    }
+    .btn:hover{ background:rgba(20,44,66,.85); }
+    .btn:active{ transform:scale(.96); }
+    .btn:focus-visible{ outline:3px solid var(--aqua2); outline-offset:2px; }
+    .btn.primary{
+      background:linear-gradient(160deg,var(--aqua),var(--aqua2)); color:#04222f; border-color:transparent;
+      box-shadow:0 10px 22px rgba(34,211,238,.35);
+    }
+    .btn.primary:hover{ filter:brightness(1.05); }
+
+    /* Der See (Spielbereich) */
+    .sea{
+      position:relative; flex:1; min-height:0; border-radius:24px; overflow:hidden;
+      border:1px solid var(--edge);
+      background:
+        radial-gradient(120% 60% at 50% -18%, rgba(125,211,252,.20), transparent 60%),
+        linear-gradient(180deg, #0b2740 0%, #0a1f33 34%, #081a2b 70%, #06141f 100%);
+      box-shadow:inset 0 2px 0 rgba(255,255,255,.06), 0 24px 50px rgba(0,0,0,.5);
+      touch-action:none; cursor:crosshair;
+    }
+    /* Lichtstreifen (ganz dezent) */
+    .sea::before{
+      content:""; position:absolute; inset:0; pointer-events:none;
+      background:
+        linear-gradient(115deg, transparent 42%, rgba(125,211,252,.06) 50%, transparent 58%),
+        linear-gradient(115deg, transparent 60%, rgba(125,211,252,.05) 68%, transparent 76%);
+      mix-blend-mode:screen;
+    }
+    /* Wasseroberfläche (Zielzone) */
+    .surface{
+      position:absolute; top:0; left:0; right:0; height:26%;
+      background:linear-gradient(180deg, rgba(125,211,252,.30), rgba(125,211,252,.04) 70%, transparent);
+      border-bottom:2px dashed rgba(125,211,252,.45);
+      display:grid; place-items:start center; padding-top:10px;
+      pointer-events:none;
+    }
+    .surface .hint{
+      font-size:13px; font-weight:600; color:rgba(226,246,255,.85);
+      background:rgba(8,26,43,.5); border:1px solid rgba(125,211,252,.3);
+      padding:6px 12px; border-radius:999px; backdrop-filter:blur(2px);
+    }
+    /* Grund (Sand) */
+    .floor{
+      position:absolute; bottom:0; left:0; right:0; height:14%;
+      background:linear-gradient(180deg, transparent, rgba(252,211,77,.10) 70%, rgba(252,211,77,.16));
+      pointer-events:none;
+    }
+
+    /* Fische */
+    .fish{
+      position:absolute; left:0; top:0; will-change:transform;
+      display:grid; place-items:center;
+      font-size:clamp(34px,7vw,54px);
+      filter:drop-shadow(0 8px 12px rgba(0,0,0,.45));
+      pointer-events:none;
+      transition:none;
+      line-height:1;
+    }
+    .fish .flip{ display:inline-block; }
+    .fish.pop{ animation:pop .5s ease; }
+    @keyframes pop{ 0%{ transform:translate(var(--x),var(--y)) scale(1);} 50%{ transform:translate(var(--x),var(--y)) scale(1.35);} 100%{ transform:translate(var(--x),var(--y)) scale(0);} }
+
+    /* Blubber (Partikel) */
+    .bub{
+      position:absolute; border-radius:50%; pointer-events:none;
+      background:radial-gradient(circle at 35% 30%, rgba(255,255,255,.85), rgba(186,230,253,.25));
+      border:1px solid rgba(186,230,253,.35);
+      will-change:transform,opacity;
+    }
+
+    /* Sprechblase (Lob) */
+    .bubble{
+      position:absolute; left:50%; top:30%; transform:translateX(-50%);
+      display:flex; align-items:center; gap:10px;
+      max-width:min(88%,420px); text-align:left;
+      background:rgba(255,255,255,.94); color:#0b1a29;
+      padding:12px 18px; border-radius:18px;
+      font-size:clamp(16px,4.2vw,20px); font-weight:700;
+      box-shadow:0 18px 40px rgba(0,0,0,.5);
+      opacity:0; pointer-events:none;
+      transition:opacity .2s ease, transform .2s ease;
+    }
+    .bubble.show{ opacity:1; transform:translate(-50%, -4px); }
+    .bubble .emoji{ font-size:clamp(24px,6vw,34px); }
+    .bubble::after{
+      content:""; position:absolute; bottom:-9px; left:50%; transform:translateX(-50%) rotate(45deg);
+      width:18px; height:18px; background:rgba(255,255,255,.94);
+    }
+
+    /* Start-Overlay */
+    .overlay{
+      position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;
+      gap:18px; text-align:center; padding:24px;
+      background:radial-gradient(120% 90% at 50% 0%, rgba(8,26,43,.55), rgba(7,19,31,.86));
+      backdrop-filter:blur(3px); z-index:5;
+    }
+    .overlay.hidden{ display:none; }
+    .overlay .big{ font-size:clamp(52px,14vw,92px); filter:drop-shadow(0 12px 18px rgba(0,0,0,.5)); }
+    .overlay h1{ margin:0; font-size:clamp(28px,7vw,44px); }
+    .overlay p{ margin:0; max-width:38ch; color:var(--muted); font-size:clamp(14px,4vw,17px); line-height:1.55; }
+    .overlay .btn{ font-size:18px; padding:14px 30px; border-radius:14px; }
+    .keys{ display:flex; gap:14px; flex-wrap:wrap; justify-content:center; color:var(--muted); font-size:13px; }
+    .keys b{ color:var(--text); font-weight:600; }
+
+    /* Feinabstimmung für kleine Screens */
+    @media (max-height:520px){
+      .stage{ padding:10px 12px; gap:8px; }
+      .logo{ width:38px; height:38px; font-size:19px; }
+      .title b{ font-size:15px; }
+      .title span{ display:none; }
+      .pill{ min-width:70px; padding:7px 11px; font-size:13px; }
+      .btn{ padding:8px 12px; font-size:13px; }
+    }
+    @media (max-width:420px){
+      .hud{ width:100%; justify-content:space-between; }
+    }
+
+    @media (prefers-reduced-motion: reduce){
+      *{ animation-duration:.001s !important; transition-duration:.001s !important; }
+      .sea::before{ display:none; }
+    }
+  </style>
+</head>
+<body>
+  <main class="stage" id="stage">
+    <div class="head">
+      <div class="brand">
+        <div class="logo">🐟</div>
+        <div class="title"><b>Blubber-See</b><span>Hilf den Fischen nach oben!</span></div>
+      </div>
+      <div class="hud">
+        <div class="pill" id="pill-gesamt" title="Gesamte Fische"><span class="ic">🐟</span><span class="v" id="v-total">0</span></div>
+        <div class="pill" id="pill-schwarm" title="Noch im Wasser"><span class="ic">💧</span><span class="v" id="v-left">0</span></div>
+        <button class="btn" id="sound-btn" aria-label="Ton an/aus" title="Ton an/aus">🔊</button>
+        <button class="btn primary" id="restart-btn" title="Neuer Schwarm">Neuer Schwarm</button>
+      </div>
+    </div>
+
+    <div class="sea" id="sea">
+      <div class="surface"><div class="hint">⬆️ Hier oben ankommen!</div></div>
+      <div class="floor"></div>
+
+      <div class="bubble" id="bubble" aria-live="polite">
+        <span class="emoji" id="bubble-emoji">😊</span>
+        <span id="bubble-text">Tippe oder ziehe nach oben, um den Fischen zu helfen!</span>
+      </div>
+
+      <div class="overlay" id="overlay">
+        <div class="big">🐠</div>
+        <h1>Blubber-See</h1>
+        <p>Die Fische sind im kalten Wasser. <b>Führe Finger oder Maus langsam nach oben</b> über einen Fisch — er schwimmt dir nach und springt an die Oberfläche! Ganz ohne Zeitdruck, jeder Fisch wird gefeiert. 🎉</p>
+        <div class="keys"><span><b>Touch</b> streichen</span><span><b>Maus</b> ziehen</span><span><b>Taste</b> Leertaste = neuer Schwarm</span></div>
+        <button class="btn primary" id="start-btn">Los geht's! 🌊</button>
+      </div>
+    </div>
+  </main>
+
+  <script>
+  (function(){
+    'use strict';
+
+    // ---------- Konstanten ----------
+    var FISH_EMOJIS = ['🐟','🐠','🐡','🦈','🐙','🦑','🐢'];
+    var PRAISE = [
+      ['🎉','Genial!'], ['🌟','Super!'], ['😄','Toll gemacht!'], ['👏','Klatsch!'],
+      ['🐬','Blub blub!'], ['✨','Wow!'], ['💛','Stark!'], ['🌈','Fantastisch!'],
+      ['🐚','Perfekt!'], ['🫧','Blubber-Blubber!']
+    ];
+    var START_FISH = 8;
+
+    // ---------- DOM ----------
+    var sea = document.getElementById('sea');
+    var overlay = document.getElementById('overlay');
+    var bubbleEl = document.getElementById('bubble');
+    var bubbleText = document.getElementById('bubble-text');
+    var bubbleEmoji = document.getElementById('bubble-emoji');
+    var vTotal = document.getElementById('v-total');
+    var vLeft = document.getElementById('v-left');
+    var soundBtn = document.getElementById('sound-btn');
+    var startBtn = document.getElementById('start-btn');
+    var restartBtn = document.getElementById('restart-btn');
+
+    // ---------- State ----------
+    var fishes = [];           // aktive Fische (Elemente)
+    var running = false;
+    var total = 0;             // insgesamt "gerettet"
+    var pointer = { x:0, y:0, active:false, down:false };
+    var soundOn = true;
+    var audioCtx = null;
+    var reduced = (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    var lastPraise = -1;
+    var lastInteract = 0;
+    var lastFrame = 0;
+
+    // ---------- Sound (optional, erst nach Input) ----------
+    function beep(freq, dur, type, vol){
+      if(!soundOn) return;
+      try{
+        if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if(audioCtx.state === 'suspended') audioCtx.resume();
+        var o = audioCtx.createOscillator(), g = audioCtx.createGain();
+        o.type = type || 'sine'; o.frequency.value = freq;
+        o.connect(g); g.connect(audioCtx.destination);
+        var t = audioCtx.currentTime;
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.exponentialRampToValueAtTime(vol || 0.12, t + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+        o.start(t); o.stop(t + dur + 0.02);
+      }catch(e){ /* Ton ist optional — ignorieren */ }
+    }
+    function popSound(){ beep(520, 0.18, 'triangle', 0.14); setTimeout(function(){ beep(780, 0.22, 'sine', 0.10); }, 90); }
+    function splashSound(){ beep(300, 0.12, 'sine', 0.08); }
+
+    // ---------- Größen ----------
+    var seaW = 0, seaH = 0, surfaceY = 0;
+    function measure(){
+      var r = sea.getBoundingClientRect();
+      seaW = r.width; seaH = r.height;
+      surfaceY = seaH * 0.26; // Höhe der Zielzone
+    }
+    window.addEventListener('resize', function(){ measure(); });
+
+    // ---------- Fisch anlegen ----------
+    function rand(a,b){ return a + Math.random()*(b-a); }
+
+    function makeFish(){
+      var el = document.createElement('div');
+      el.className = 'fish';
+      el.innerHTML = '<span class="flip">' + FISH_EMOJIS[Math.floor(Math.random()*FISH_EMOJIS.length)] + '</span>';
+      // Startposition: untere Hälfte des Sees
+      var x = rand(0.08, 0.92) * seaW;
+      var y = rand(seaH*0.55, seaH*0.9);
+      var f = {
+        el: el,
+        x: x, y: y,
+        vx: 0, vy: 0,
+        driftPhase: Math.random()*Math.PI*2,
+        driftAmp: rand(6,16),
+        driftSpeed: rand(0.6,1.2),
+        facing: Math.random() < 0.5 ? 1 : -1,
+        rescued: false,
+        popping: false,
+        popT: 0
+      };
+      applyPos(f);
+      sea.appendChild(el);
+      return f;
+    }
+
+    function applyPos(f){
+      f.el.style.setProperty('--x', f.x + 'px');
+      f.el.style.setProperty('--y', f.y + 'px');
+      f.el.style.transform = 'translate(' + f.x + 'px,' + f.y + 'px)';
+      f.el.style.left = 0; f.el.style.top = 0;
+      var flip = f.el.querySelector('.flip');
+      flip.style.transform = 'scaleX(' + f.facing + ')';
+    }
+
+    function updateHUD(){
+      vTotal.textContent = String(total);
+      vLeft.textContent = String(fishes.length);
+    }
+
+    function newSwarm(){
+      // Alte Fische entfernen
+      fishes.forEach(function(f){ if(f.el.parentNode) f.el.parentNode.removeChild(f.el); });
+      fishes = [];
+      for(var i=0;i<START_FISH;i++){ fishes.push(makeFish()); }
+      updateHUD();
+    }
+
+    // ---------- Blubber-Partikel ----------
+    function spawnBubbles(x, y, n){
+      if(reduced) return;
+      for(var i=0;i<n;i++){
+        var b = document.createElement('div');
+        b.className = 'bub';
+        var size = rand(5, 16);
+        b.style.width = size + 'px';
+        b.style.height = size + 'px';
+        sea.appendChild(b);
+        var bx = x + rand(-14,14), by = y + rand(-6,6);
+        b.style.left = '0px'; b.style.top = '0px';
+        b._x = bx; b._y = by;
+        b._vx = rand(-30,30);
+        b._vy = rand(-120,-50);
+        b._life = 0;
+        b._ttl = rand(0.7,1.3);
+        (function(part){ part._el = b; })(b);
+        bubbles.push(b);
+      }
+    }
+    var bubbles = [];
+    function updateBubbles(dt){
+      for(var i=bubbles.length-1;i>=0;i--){
+        var b = bubbles[i];
+        b._life += dt;
+        if(b._life > b._ttl){ if(b.parentNode) b.parentNode.removeChild(b); bubbles.splice(i,1); continue; }
+        b._x += b._vx * dt;
+        b._y += b._vy * dt;
+        b._vy -= 20 * dt; // nach oben beschleunigen
+        var k = 1 - (b._life / b._ttl);
+        b.style.transform = 'translate(' + b._x + 'px,' + b._y + 'px)';
+        b.style.opacity = String(Math.max(0, k));
+      }
+    }
+
+    // ---------- Lob ----------
+    function showPraise(emoji, text){
+      lastPraise = (lastPraise + 1) % PRAISE.length;
+      bubbleEmoji.textContent = emoji;
+      bubbleText.textContent = text;
+      bubbleEl.classList.remove('show');
+      // Reflow, damit Transition neu startet
+      void bubbleEl.offsetWidth;
+      bubbleEl.classList.add('show');
+      lastInteract = performance.now();
+    }
+    function hideBubble(){ bubbleEl.classList.remove('show'); }
+
+    function praiseFor(index){
+      // Durch die Lobliste wandern, damit es abwechselnd wird
+      var p = PRAISE[index % PRAISE.length];
+      return p;
+    }
+
+    // ---------- Fisch "retten" ----------
+    function rescueFish(f, now){
+      if(f.rescued || f.popping) return;
+      f.popping = true;
+      f.popT = 0;
+      f.rescued = true;
+      total++;
+      popSound();
+      splashSound();
+      spawnBubbles(f.x, f.y, 14);
+      var p = praiseFor(total);
+      showPraise(p[0], p[1]);
+      updateHUD();
+      // Pop-Animation auslösen
+      f.el.classList.add('pop');
+      setTimeout(function(){
+        if(f.el.parentNode) f.el.parentNode.removeChild(f.el);
+        var idx = fishes.indexOf(f);
+        if(idx >= 0) fishes.splice(idx, 1);
+        updateHUD();
+        if(fishes.length === 0){
+          // Alle gerettet — kurzer Moment, dann neuer Schwarm
+          showPraise('🏆','Alle Fische sind oben! Nochmal?');
+          setTimeout(function(){ if(running) newSwarm(); }, 1600);
+        }
+      }, 520);
+    }
+
+    // ---------- Physik/Interaktion ----------
+    function pointerToSea(e){
+      var r = sea.getBoundingClientRect();
+      return { x: e.clientX - r.left, y: e.clientY - r.top };
+    }
+
+    function onPointerMove(e){
+      if(!running) return;
+      var p = pointerToSea(e);
+      pointer.x = p.x; pointer.y = p.y;
+      pointer.active = true;
+      // Fische anziehen, die in Reichweite sind
+      for(var i=0;i<fishes.length;i++){
+        var f = fishes[i];
+        if(f.rescued) continue;
+        var dx = pointer.x - f.x;
+        var dy = pointer.y - f.y;
+        var dist = Math.sqrt(dx*dx + dy*dy);
+        var reach = Math.min(200, Math.max(120, seaH*0.24));
+        if(dist < reach){
+          // Je näher, desto stärkerer "Schwimmimpuls" in Richtung Zeiger
+          var pull = (1 - dist/reach);
+          f.vx += (dx/dist) * pull * 260 * 0.016;
+          f.vy += (dy/dist) * pull * 260 * 0.016;
+          // Fische schwimmen dem Zeiger nach — aber wir wollen sie NACH OBEN helfen,
+          // also bei Annäherung nach oben drücken, wenn Zeiger über ihnen ist
+          if(dy < -10){ f.vy -= pull * 60 * 0.016; }
+          // Richtung des Zeigers annehmen
+          if(Math.abs(dx) > 4) f.facing = (dx > 0 ? 1 : -1);
+        }
+        // Rettung, wenn Fisch die Oberflächengrenze erreicht
+        if(!f.rescued && f.y <= surfaceY + 6){
+          rescueFish(f, performance.now());
+        }
+      }
+    }
+
+    function onPointerDown(e){
+      if(!running) return;
+      pointer.down = true;
+      onPointerMove(e);
+      // Direkter Tap auf einen Fisch = sofort helfen
+      var p = pointerToSea(e);
+      var best = null, bestD = 60;
+      for(var i=0;i<fishes.length;i++){
+        var f = fishes[i]; if(f.rescued) continue;
+        var d = Math.hypot(p.x - f.x, p.y - f.y);
+        if(d < bestD){ bestD = d; best = f; }
+      }
+      if(best){
+        // Starter Impuls nach oben
+        best.vy -= 220;
+        best.vx += (p.x - best.x) * 1.2;
+      }
+    }
+    function onPointerUp(){ pointer.down = false; }
+
+    function update(dt){
+      // Fische: Drift + Impulse + sanfter Rückzug Richtung Mitte
+      for(var i=0;i<fishes.length;i++){
+        var f = fishes[i];
+        if(f.rescued){
+          // Pop-Phase
+          if(f.popping){
+            f.popT += dt;
+            f.y -= 60 * dt; // schnelles Hochschnellen
+            applyPos(f);
+          }
+          continue;
+        }
+        // Leichter Drift (Wasserströmung)
+        f.driftPhase += dt * f.driftSpeed;
+        var driftX = Math.cos(f.driftPhase) * f.driftAmp;
+        f.x += driftX * dt;
+
+        // Impulse dämpfen (Reibung)
+        f.vx *= (1 - 2.4*dt);
+        f.vy *= (1 - 2.4*dt);
+        // Leichter Auftrieb, wenn Zeiger in der Nähe war — sonst sanft nach unten (bleibt im Wasser)
+        f.vy += 14 * dt; // leichtes Absinken, damit sie nicht von selbst hochschwimmen
+        // Horizontale Rückstellung zur Mitte (weich)
+        f.vx += (seaW/2 - f.x) * 0.06 * dt;
+
+        f.x += f.vx * dt;
+        f.y += f.vy * dt;
+
+        // Kanten halten (Fisch bleibt im See)
+        var margin = 10;
+        if(f.x < margin){ f.x = margin; f.vx = Math.abs(f.vx)*0.4; }
+        if(f.x > seaW - margin){ f.x = seaW - margin; f.vx = -Math.abs(f.vx)*0.4; }
+        if(f.y > seaH - 12){ f.y = seaH - 12; f.vy = -Math.abs(f.vy)*0.3; }
+        // Wenn Fisch zufällig sehr hoch kommt (durch Impuls) → rettet
+        if(f.y <= surfaceY + 6 && !f.rescued){
+          rescueFish(f, performance.now());
+          continue;
+        }
+
+        applyPos(f);
+      }
+      updateBubbles(dt);
+
+      // Lob nach einer Weile ohne Interaktion ausblenden
+      if(performance.now() - lastInteract > 2600){
+        hideBubble();
+      }
+    }
+
+    // ---------- Loop (Delta-Time) ----------
+    function loop(ts){
+      if(!lastFrame) lastFrame = ts;
+      var dt = (ts - lastFrame) / 1000;
+      lastFrame = ts;
+      if(dt > 0.05) dt = 0.05; // Sprünge abfangen
+      if(running) update(dt);
+      requestAnimationFrame(loop);
+    }
+
+    // ---------- Start/Reset ----------
+    function start(){
+      overlay.classList.add('hidden');
+      running = true;
+      measure();
+      if(fishes.length === 0) newSwarm();
+      lastFrame = 0;
+      // Lob-Startmeldung
+      showPraise('👋','Tippe oder streiche über einen Fisch!');
+    }
+
+    // ---------- Events ----------
+    sea.addEventListener('pointermove', onPointerMove, {passive:true});
+    sea.addEventListener('pointerdown', onPointerDown, {passive:true});
+    window.addEventListener('pointerup', onPointerUp);
+    sea.addEventListener('pointerleave', function(){ pointer.active = false; });
+
+    startBtn.addEventListener('pointerdown', function(e){
+      e.preventDefault();
+      start();
+      if(soundOn && !audioCtx){ try{ audioCtx = new (window.AudioContext||window.webkitAudioContext)(); audioCtx.resume(); }catch(err){} }
+    });
+    startBtn.addEventListener('click', function(){ /* Fallback für Tastatur */ start(); });
+
+    restartBtn.addEventListener('pointerdown', function(e){
+      e.preventDefault();
+      if(!running){ start(); return; }
+      newSwarm();
+      showPraise('🌊','Neuer Schwarm!');
+    });
+    restartBtn.addEventListener('click', function(){ if(running) newSwarm(); });
+
+    soundBtn.addEventListener('pointerdown', function(e){
+      e.preventDefault();
+      soundOn = !soundOn;
+      soundBtn.textContent = soundOn ? '🔊' : '🔇';
+      soundBtn.setAttribute('aria-pressed', soundOn ? 'true' : 'false');
+    });
+    soundBtn.addEventListener('click', function(){ soundOn = !soundOn; soundBtn.textContent = soundOn ? '🔊' : '🔇'; });
+
+    // Tastatur
+    document.addEventListener('keydown', function(e){
+      if(e.key === ' ' || e.code === 'Space'){
+        e.preventDefault();
+        if(!running) start(); else newSwarm();
+      }
+    });
+
+    // ---------- Test-API (für Automatisierung) ----------
+    window.__blubberSee = {
+      start: start,
+      newSwarm: function(){ newSwarm(); },
+      state: {
+        get running(){ return running; },
+        get total(){ return total; },
+        get left(){ return fishes.filter(function(f){return !f.rescued;}).length; },
+      },
+      rescueAll: function(){
+        // Testhelfer: alle aktiven Fische retten
+        var list = fishes.slice();
+        list.forEach(function(f){ rescueFish(f, performance.now()); });
+      },
+      getFishes: function(){ return fishes.map(function(f){ return { x:Math.round(f.x), y:Math.round(f.y), rescued:f.rescued }; }); }
+    };
+
+    // Init
+    measure();
+    requestAnimationFrame(loop);
+  })();
+  </script>
+</body>
+</html>
