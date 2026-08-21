@@ -14,13 +14,12 @@ Jedes Spiel ist eine einzelne, eigenständige HTML-Datei (HTML + CSS + JS inline
 | 🧺 Frucht-Fang | [`frucht.html`](frucht.html) | Für die ganz Kleinen (4–6 J.) — Korb schieben, Früchte auffangen. Groß, langsam, ohne Zeitdruck, mit viel Lob. |
 | 🎨 Farben-Blitz | [`farben-blitz.html`](farben-blitz.html) | Für die ganz Kleinen (4–6 J.) — „Zeig mir Rot!" — passende große Farb-Kachel antippen. Farben lernen, ohne Zeitdruck, nie bestraft, nur viel Lob. |
 | 💦 Blubber-See | [`blubber.html`](blubber.html) | Für die ganz Kleinen (4–6 J.) — Fische mit Finger oder Maus nach oben schwimmen lassen, bis sie platschen. Ruhig, ohne Zeitlimit, keine Verlierer. |
+| 🐰 Wegweiser | [`wegweiser.html`](wegweiser.html) | Für die ganz Kleinen (4–6 J.) — Hase zur Karotte begleiten. Einfache Links/Rechts-Schritte, viel Licht, keine Fallen, nie bestraft. |
 
-### 🧸 Kleinkind-Kiste (4–6 Jahre) — Ideen & Baustellen
+### 🧸 Kleinkind-Kiste (4–6 Jahre) — fertig
 
 Spiele für die ganz Kleinen: groß, langsam, ohne Zeitdruck und mit viel Lob.
-**Frucht-Fang, Farben-Blitz und Blubber-See sind fertig und spielbar** 🎉 (siehe Tabelle oben). Noch als Platzhalter in [`index.html`](index.html) hinterlegt:
-
-- 🐰 **Wegweiser** — Hase zur Karotte begleiten
+**Alle vier sind fertig und spielbar** 🎉 (Frucht-Fang, Farben-Blitz, Blubber-See, Wegweiser — siehe Tabelle oben).
 
 ## 📦 Weitere Spiel-Ideen (Backlog)
 
@@ -63,6 +62,7 @@ BrowserGames/
 ├── frucht.html     # 🧺 Frucht-Fang
 ├── farben-blitz.html # 🎨 Farben-Blitz
 ├── blubber.html    # 💦 Blubber-See
+├── wegweiser.html  # 🐰 Wegweiser
 ├── agents.md       # Regeln & Definition-of-Done für alle Spiele
 └── readme.md       # Diese Datei
 ```
